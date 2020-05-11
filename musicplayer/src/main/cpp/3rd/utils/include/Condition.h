@@ -13,6 +13,7 @@ class Condition {
   void wait(Mutex *mutex);
   void wait(int64_t time, Mutex *);
   void signal();
+  void broadcast();
   Condition();
   virtual ~Condition();
 };

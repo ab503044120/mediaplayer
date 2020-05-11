@@ -10,10 +10,11 @@ add_subdirectory(3rd/utils)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/jni SRC_MUSIC_PLAYER_JNI)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/musicplayer SRC_MUSIC_PLAYER)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/musicplayer/decoder SRC_MUSIC_PLAYER_DECODER)
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd/ffmpeg/libs/${ANDROID_ABI})
 
-add_library(musicplayer SHARED ${SRC_MUSIC_PLAYER} ${SRC_MUSIC_PLAYER_JNI})
+add_library(musicplayer SHARED ${SRC_MUSIC_PLAYER} ${SRC_MUSIC_PLAYER_JNI} ${SRC_MUSIC_PLAYER_DECODER})
 
 target_link_libraries(musicplayer
         android

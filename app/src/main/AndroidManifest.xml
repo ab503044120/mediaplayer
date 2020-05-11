@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:tools="http://schemas.android.com/tools"
-    package="org.huihui.musicplayer.demo"
+    package="org.huihui.musicplayer.test"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".MainActivity">
+        <activity android:name="org.huihui.musicplayer.demo.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

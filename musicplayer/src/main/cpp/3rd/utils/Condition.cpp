@@ -32,15 +32,16 @@ void Condition::wait(Mutex *mutex) {
 
 void Condition::wait(int64_t timeout, Mutex *mutex) {
   struct timespec tv{};
-  clock_gettime(CLOCK_MONOTONIC, &tv);
   tv.tv_sec = timeout / NANOSEC;
   tv.tv_nsec = timeout % NANOSEC;
-#if defined(__ANDROID_API__) && __ANDROID_API__ < 21
-  /*
- * The bionic pthread implementation doesn't support CLOCK_MONOTONIC,
- * but has this alternative function instead.
- */
-  pthread_cond_timedwait_monotonic_np(&cond,  &mutex->mutex, &tv);
+//#if defined(__ANDROID_API__) && __ANDROID_API__ < 21
+//  /*
+// * The bionic pthread implementation doesn't support CLOCK_MONOTONIC,
+// * but has this alternative function instead.
+// */
+//  pthread_cond_timedwait_monotonic_np(&cond,  &mutex->mutex, &tv);
+#if defined(HAVE_PTHREAD_COND_TIMEDWAIT_RELATIVE)
+    return -pthread_cond_timedwait_relative_np(&cond,&mutex->mutex, &tv);
 #else
   pthread_cond_timedwait(&this->cond,  &mutex->mutex, &tv);
 
@@ -49,5 +50,8 @@ void Condition::wait(int64_t timeout, Mutex *mutex) {
 
 void Condition::signal() {
   pthread_cond_signal(&cond);
+}
+void Condition::broadcast() {
+  pthread_cond_broadcast(&cond);
 }
 
