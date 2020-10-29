@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:tools="http://schemas.android.com/tools"
-    package="org.huihui.musicplayer.test"
+    package="org.huihui.meidaplayer.test"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
@@ -10,8 +10,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:networkSecurityConfig="@xml/network_config"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="org.huihui.musicplayer.demo.MainActivity">
+        <activity android:name="org.huihui.meidaplayer.demo.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
