@@ -138,8 +138,8 @@ EGLConfig EglCore::getConfig(int flags, int version) {
  */
 void EglCore::destroy() {
   if (mEGLDisplay != EGL_NO_DISPLAY) {
-    eglTerminate(mEGLDisplay);
     eglDestroyContext(mEGLDisplay, mEGLContext);
+    eglTerminate(mEGLDisplay);
     eglReleaseThread();
   }
 

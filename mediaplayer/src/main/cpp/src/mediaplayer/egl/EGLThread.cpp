@@ -5,13 +5,16 @@
 #include "EGLThread.h"
 #include <ctime>
 #include "GLES2/gl2.h"
+#include "ShapeRender.h"
 void EGLThread::run() {
-  clock_t start = 0;
   bool lostEglContext = false;
   while (!exit) {
     drawMutex.lock();
     while (!exit) {
       if (lostEglContext) {
+        if (render) {
+          render->onSurfacedestroy();
+        }
         eglCore.destroySurface(mEglSurface);
         hasGlSurface = false;
         mEglSurface = nullptr;
@@ -21,6 +24,9 @@ void EGLThread::run() {
       }
       if (!hasSurface) {
         if (hasGlSurface) {
+          if (!render) {
+            render->onSurfacedestroy();
+          }
           eglCore.destroySurface(mEglSurface);
           mEglSurface = nullptr;
           hasGlSurface = false;
@@ -31,25 +37,37 @@ void EGLThread::run() {
       if (readyDraw()) {
         if (!eglCore.hasEGLContext()) {
           eglCore.init(nullptr, 0);
+          hasGLContext = true;
         }
-        if (!hasGlSurface) {
-          hasGlSurface = true;
-          mEglSurface = eglCore.createWindowSurface(mWindow);
-          if (mEglSurface == nullptr) {
-            mSurfaceIsBad = true;
-          } else {
-            eglCore.makeCurrent(mEglSurface);
-          }
-        }
-        start = clock();
-        glViewport(0, 0, width, height);
-        glClearColor(1.0f, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         break;
       } else {
         drawCond.wait();
       }
     }
+    if (!hasGlSurface) {
+      mEglSurface = eglCore.createWindowSurface(mWindow);
+      eglCore.makeCurrent(mEglSurface);
+      hasGlSurface = true;
+      if (mEglSurface != nullptr) {
+        if (render) {
+          render->onSurfaceCreate();
+        }
+      } else {
+        mSurfaceIsBad = true;
+      }
+    }
+    if (mSizeChange) {
+      mSizeChange = false;
+      if (render) {
+        render->onSurfaceChange(height, width);
+      }
+    }
+
+    if (render) {
+      render->onDrawFrame();
+    }
+
     eglCore.swapBuffers(mEglSurface);
     EGLint error = eglGetError();
     switch (error) {
@@ -59,8 +77,6 @@ void EGLThread::run() {
       default:mSurfaceIsBad = true;
         break;
     }
-
-    LOGE(TAG, "swapBuffers: %lfms %x", double (clock() -start)*1000  / CLOCKS_PER_SEC, error);
     drawMutex.unLock();
   }
 }
@@ -69,7 +85,7 @@ bool EGLThread::readyDraw() {
   return hasSurface && !mSurfaceIsBad && width != 0 && height != 0;
 }
 
-EGLThread::EGLThread() : Thread("EGLRenderThread", nullptr), drawMutex(Mutex()), drawCond(drawMutex) {
+EGLThread::EGLThread() : Thread("EGLRenderThread", nullptr), render(new ShapeRender()), drawMutex(Mutex()), drawCond(drawMutex) {
   start();
 }
 
@@ -84,6 +100,7 @@ void EGLThread::surfaceChange(uint16_t height, uint16_t width) {
   autoLock(drawMutex);
   this->height = height;
   this->width = width;
+  mSizeChange = true;
   this->drawCond.broadcast();
 
 }

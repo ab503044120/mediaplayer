@@ -7,11 +7,20 @@
 
 #include <android/native_window.h>
 class GLRender {
-  void onSurfaceCreate(ANativeWindow *nativeWindow);
+ private:
+  const char *TAG = "GLRender";
+ protected:
+  int32_t height = 0;
+  int32_t width = 0;
+ public:
 
-  void onSurfaceChange(uint16_t height, uint16_t width);
+  virtual void onSurfaceCreate();
 
-  void onDrawFrame();
+  virtual void onSurfaceChange(uint16_t height, uint16_t width);
+
+  virtual void onDrawFrame();
+  virtual void onSurfacedestroy() {};
+
 };
 
 #endif //MUSICPLAYER_GLRENDER_H

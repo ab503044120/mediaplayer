@@ -36,7 +36,6 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_org_huihui_meidaplayer_egl_EGLRender_nSurfaceCreated(JNIEnv *env, jobject thiz, jobject surface) {
   ANativeWindow *mWindow = ANativeWindow_fromSurface(env, surface);
-  ANativeWindow_fromSurfacena
   auto *render = reinterpret_cast<EGLThread *>(env->GetLongField(thiz, gEGLRenderClassNativeObjID));
   render->surfaceCreate(mWindow);
 }

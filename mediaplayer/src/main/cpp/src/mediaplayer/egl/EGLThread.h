@@ -8,6 +8,7 @@
 #include <android/native_window.h>
 #include "Thread.h"
 #include "EglCore.h"
+#include "GLRender.h"
 class EGLThread : public Thread {
  private:
   const char *TAG = "EGLRender";
@@ -18,12 +19,13 @@ class EGLThread : public Thread {
   bool hasGLContext = false;
   bool hasGlSurface = false;
   bool mSurfaceIsBad = false;
+  bool mSizeChange = false;
   uint16_t height = 0;
   uint16_t width = 0;
   EglCore eglCore;
   EGLSurface mEglSurface = nullptr;
   ANativeWindow *mWindow = nullptr;
-
+  GLRender *render = nullptr;
  public:
   EGLThread();
 
