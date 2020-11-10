@@ -1,21 +1,15 @@
 package org.huihui.meidaplayer.demo;
 
 import android.os.Bundle;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
 
 import org.huihui.meidaplayer.MediaPlayer;
-import org.huihui.meidaplayer.egl.EGLRender;
 import org.huihui.meidaplayer.test.R;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
-
-    EGLRender render;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,23 +26,6 @@ public class MainActivity extends AppCompatActivity {
                 mediaPlayer.prepare();
             }
 
-        });
-        render = new EGLRender();
-        ((SurfaceView) findViewById(R.id.sv)).getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(@NonNull SurfaceHolder holder) {
-                render.onSurfaceCreated(holder.getSurface());
-            }
-
-            @Override
-            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-                render.onSurfaceChanged(width, height);
-            }
-
-            @Override
-            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-                render.onSurfaceDestroyed();
-            }
         });
     }
 

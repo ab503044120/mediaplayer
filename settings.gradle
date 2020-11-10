@@ -1,1 +1,3 @@
+include ':EGL'
+include ':glsurfaceviewdemo'
 include ':app', ':mediaplayer'
