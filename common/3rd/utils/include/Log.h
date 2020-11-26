@@ -9,6 +9,7 @@
 #include <string>
 #include <chrono>
 
+
 std::chrono::steady_clock::time_point currentTime();
 
 #define LOGGER_WITH_TRACK(logger, level, format, ...) \

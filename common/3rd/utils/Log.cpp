@@ -5,6 +5,9 @@
 #include <utility>
 
 #include "Log.h"
+uint16_t ANDROID_LOG_ALL = ANDROID_LOG_DEFAULT;
+
+bool logLevel = ANDROID_LOG_ALL;
 
 std::chrono::steady_clock::time_point currentTime() {
   return std::chrono::steady_clock::now();
@@ -13,7 +16,9 @@ std::chrono::steady_clock::time_point currentTime() {
 Logger::Logger(std::string tag) : tag(std::move(tag)) {}
 
 void Logger::log(int32_t level, const char *tag, const char *format, va_list vaList) {
-  __android_log_vprint(level, tag, format, vaList);
+  if (level > logLevel) {
+    __android_log_vprint(level, tag, format, vaList);
+  }
 }
 
 void Logger::log(int32_t level, const char *tag, const char *format, ...) {

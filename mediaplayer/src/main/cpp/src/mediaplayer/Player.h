@@ -8,6 +8,9 @@
 #include <cstdint>
 #include <Thread.h>
 #include <Mutex.h>
+#include <queue/PacketQueue.h>
+#include <decoder/Decoder.h>
+#include <queue/FrameQueue.h>
 extern "C" {
 #include "libavformat/avformat.h"
 }
@@ -17,10 +20,10 @@ class VideoState;
 class Player : public Runnable {
  private:
   const char *url;
-  static const char* TAG;
+  static const char *TAG;
   AVFormatContext *pFormatCtx;
   AVDictionary *codec_opts;
-  Mutex *mMutext;
+  Mutex mutex;
   VideoState *videoState;
 
  public:
@@ -58,18 +61,25 @@ class Player : public Runnable {
 
 class VideoState {
  public:
-  bool pause;
-  bool last_pause;
-  bool pause_req;
+  bool pause = false;
+  bool last_pause = false;
+  bool pause_req = false;
 
-  bool prepared;
+  bool prepared = false;
 
-  bool abort_req;
+  volatile bool abort_req = false;
 
-  Thread *readThread;
+  Thread *readThread = nullptr;
 
   int32_t audioStreamIndex = -1;
+  PacketQueue audioq;
+  FrameQueue audioFq;
+  Decoder *audioDecoder = nullptr;
+
   int32_t videoStreamIndex = -1;
+  PacketQueue videoq;
+  FrameQueue videoFq;
+  Decoder *videoDecoder = nullptr;
 
 };
 #endif //MUSICPLAYER_PLAYER_H

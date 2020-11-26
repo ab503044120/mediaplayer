@@ -1,3 +1,4 @@
+include ':opensles'
 include ':EGL'
 include ':glsurfaceviewdemo'
 include ':app', ':mediaplayer'

@@ -3,9 +3,11 @@
 //
 
 #include "Thread.h"
+
+#include <utility>
 void *fnThread(void *arg) {
   auto *thread = reinterpret_cast < Thread * > (arg);
-  pthread_setname_np(pthread_self(), thread->name);
+  pthread_setname_np(pthread_self(), thread->name.c_str());
   thread->mutex.lock();
   thread->isRunning = true;
   thread->mutex.unLock();
@@ -19,10 +21,15 @@ void *fnThread(void *arg) {
   thread->mutex.unLock();
   return nullptr;
 }
+volatile int64_t Thread::threadIndex = 0;
 
-Thread::Thread(const char *name, Runnable *runnable)
-    : mutex(Mutex()), cond(mutex), name(name), runnable(runnable) {}
+Thread::Thread(std::string &&name, Runnable *runnable) : Thread(name, runnable) {}
 
+Thread::Thread(std::string &name, Runnable *runnable) : mutex(Mutex()), cond(mutex), name(name), runnable(runnable) {
+}
+Thread::Thread(Runnable *runnable) : Thread(std::string("thread-").append(std::to_string(threadIndex++)), runnable) {
+
+}
 void Thread::start() {
   autoLock(mutex);
   if (!isRunning) {
@@ -36,5 +43,6 @@ int Thread::join() {
 void Thread::detach() {
   pthread_detach(tid);
 }
+
 
 

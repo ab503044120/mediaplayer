@@ -1,6 +1,7 @@
 package org.huihui.meidaplayer.demo;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -21,9 +22,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 MediaPlayer mediaPlayer = new MediaPlayer();
+                Log.e("haha", "onClick: 1" );
 //        musicPlayer.SetDataSource(new File(Environment.getExternalStorageDirectory(), "input.mp3").getAbsolutePath());
                 mediaPlayer.SetDataSource("http://stream7.iqilu.com/10339/article/202002/17/778c5884fa97f460dac8d90493c451de.mp4");
+                Log.e("haha", "onClick: 2" );
                 mediaPlayer.prepare();
+                Log.e("haha", "onClick: 3" );
             }
 
         });

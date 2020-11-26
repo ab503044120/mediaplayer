@@ -2,34 +2,38 @@
 // Created by huihui on 2019/9/22.
 //
 
+#include <decoder/AudioDecoder.h>
+#include <decoder/VideoDecoder.h>
+#include <unistd.h>
 #include "Player.h"
 #include "utils.h"
+
 const char *Player::TAG = "Player";
 
 void Player::setDataSource(const char *dataSource) {
   url = dataSource;
 }
+
 void Player::prepare() {
-  autoLock(mMutext);
+  autoLock(mutex);
   videoState->readThread = new Thread("read_thread", this);
   videoState->readThread->start();
-
 }
 
 void Player::start() {
-  autoLock(mMutext);
+  autoLock(mutex);
 }
 
 void Player::stop() {
-  autoLock(mMutext);
+  autoLock(mutex);
 }
 
 void Player::pause() {
-  autoLock(mMutext);
+  autoLock(mutex);
 }
 
 void Player::seek(int64_t msec) {
-  autoLock(mMutext);
+  autoLock(mutex);
 }
 
 int64_t Player::getPosition() {
@@ -41,20 +45,18 @@ int64_t Player::getDuration() {
 }
 
 void Player::reset() {
-  autoLock(mMutext);
+  autoLock(mutex);
 }
 
 void Player::release() {
-  autoLock(mMutext);
+  autoLock(mutex);
 
 }
 Player::Player() {
-  mMutext = new Mutex;
   videoState = new VideoState;
 
 }
 Player::~Player() {
-  SAFE_DELETE(mMutext)
 }
 
 void printError(const char *preFix, int err) {
@@ -89,25 +91,56 @@ void Player::run() {
     LOGE(TAG, "%s", "not find audioStreamIndex and videoStreamIndex");
     return;
   }
-  if (videoState->audioStreamIndex > 0) {
+  if (videoState->audioStreamIndex >= 0) {
     streamComponentOpen(videoState->audioStreamIndex);
   }
-  if (videoState->videoStreamIndex > 0) {
+  if (videoState->videoStreamIndex >= 0) {
     streamComponentOpen(videoState->videoStreamIndex);
   }
+  AVPacket pkt;
+  while (true) {
+    if (videoState->abort_req) {
+      return;
+    }
+    if (videoState->audioq.size + videoState->videoq.size < 10 * 1000 * 1000 &&
+        videoState->videoq.nb_packet > 3 && videoState->audioq.nb_packet > 3) {
+      LOGE(TAG, "%s", " queue full");
+      usleep(10 * 1000);
+      continue;
+    }
 
+    ret = av_read_frame(pFormatCtx, &pkt);
+    LOGE(TAG, "%s %d", " av_read_frame", ret);
+
+    if (ret == 0) {
+      if (pkt.stream_index == videoState->videoStreamIndex) {
+        videoState->videoq.put(pkt, 0);
+        LOGE(TAG, "%s %d %d", " videoq", videoState->videoq.nb_packet, videoState->videoq.maxPackNb);
+      } else if (pkt.stream_index == videoState->audioStreamIndex) {
+        videoState->audioq.put(pkt, 0);
+        LOGE(TAG, "%s %d %d", " audioq", videoState->videoq.nb_packet, videoState->videoq.maxPackNb);
+      } else {
+        LOGE(TAG, "%s %d", "other", pkt.stream_index);
+        av_packet_unref(&pkt);
+      }
+    } else if (ret == AVERROR_EOF) {
+      break;
+    } else {
+      break;
+    }
+  }
 }
 int32_t Player::streamComponentOpen(int stream_index) {
   AVCodecContext *avctx;
   AVCodec *codec;
-  AVDictionary *opts = NULL;
-  AVDictionaryEntry *t = NULL;
+  AVDictionary *opts = nullptr;
+  AVDictionaryEntry *t = nullptr;
   int32_t sample_rate = AVMEDIA_TYPE_UNKNOWN, nb_channels;
   int64_t channel_layout;
   int32_t ret = 0;
   int32_t stream_lowres = 0;
 
-  avctx = avcodec_alloc_context3(NULL);
+  avctx = avcodec_alloc_context3(nullptr);
   if (!avctx)
     return AVERROR(ENOMEM);
   ret = avcodec_parameters_to_context(avctx, pFormatCtx->streams[stream_index]->codecpar);
@@ -137,14 +170,22 @@ int32_t Player::streamComponentOpen(int stream_index) {
     case AVMEDIA_TYPE_AUDIO:sample_rate = avctx->sample_rate;
       nb_channels = avctx->channels;
       channel_layout = avctx->channel_layout;
+
+      videoState->audioDecoder = new AudioDecoder(stream_index, pFormatCtx->streams[stream_index],
+                                                  avctx, videoState);
+      videoState->audioDecoder->start();
       break;
     case AVMEDIA_TYPE_VIDEO:
-
+      videoState->videoDecoder = new VideoDecoder(stream_index, pFormatCtx->streams[stream_index],
+                                                  avctx, videoState);
+      videoState->videoDecoder->start();
       break;
     default :break;
   }
+  goto out;
 
   fail:
   avcodec_free_context(&avctx);
+  out:
   return 0;
 }

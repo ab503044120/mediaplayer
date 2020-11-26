@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import kotlinx.android.synthetic.main.activity_main.*
+import org.huihui.glsurfaceviewdemo.databinding.ActivityMainBinding
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -16,8 +16,9 @@ class MainActivity : AppCompatActivity() {
     var handler = Handler()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        gv.setRenderer(object : GLSurfaceView.Renderer {
+        val bind = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(bind.root)
+        bind.gv.setRenderer(object : GLSurfaceView.Renderer {
             override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
 
             }
@@ -34,11 +35,11 @@ class MainActivity : AppCompatActivity() {
                 GLES20.glClearColor(1f, 0f, 0f, 1f);
             }
         })
-        gv.renderMode = RENDERMODE_WHEN_DIRTY
-        handler.postDelayed(object :Runnable {
+        bind.gv.renderMode = RENDERMODE_WHEN_DIRTY
+        handler.postDelayed(object : Runnable {
             override fun run() {
-                gv.requestRender()
-                handler.postDelayed(this,2)
+                bind.gv.requestRender()
+                handler.postDelayed(this, 2)
             }
         }, 2)
     }

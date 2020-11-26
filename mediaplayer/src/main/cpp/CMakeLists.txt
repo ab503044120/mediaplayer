@@ -8,15 +8,16 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer)
 
 #add_subdirectory(3rd/ffmpeg)
 
-add_subdirectory(${COMMON_DIR}/3rd/utils ${TOP_DIR}/common)
+add_subdirectory(${COMMON_DIR}/3rd/utils utils)
+add_subdirectory(${COMMON_DIR}/3rd/ffmpeg ffmpeg)
+
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/jni SRC_MEDIA_PLAYER_JNI)
-
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer SRC_MEDIA_PLAYER)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer/decoder SRC_MEDIA_PLAYER_DECODER)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer/queue SRC_MEDIA_PLAYER_QUEUE)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer/render SRC_MEDIA_PLAYER_RENDER)
 
-#link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd/ffmpeg/libs/${ANDROID_ABI})
 
 add_library(avcodec SHARED IMPORTED)
 set_target_properties(avcodec
@@ -60,7 +61,13 @@ set_target_properties(swscale
         ${COMMON_DIR}/3rd/ffmpeg/libs/${ANDROID_ABI}/libswscale.so)
 
 
-add_library(mediaplayer SHARED  ${SRC_MEDIA_PLAYER_JNI} ${SRC_MEDIA_PLAYER} ${SRC_MEDIA_PLAYER_DECODER} ${SRC_MEDIA_PLAYER_QUEUE})
+#link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd/ffmpeg/libs/${ANDROID_ABI})
+add_library(mediaplayer SHARED
+        ${SRC_MEDIA_PLAYER_JNI}
+        ${SRC_MEDIA_PLAYER}
+        ${SRC_MEDIA_PLAYER_DECODER}
+        ${SRC_MEDIA_PLAYER_QUEUE}
+        ${SRC_MEDIA_PLAYER_RENDER})
 
 target_link_libraries(mediaplayer
         android

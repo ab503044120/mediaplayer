@@ -19,7 +19,8 @@ class Runnable {
 class Thread : public Runnable {
 
  private:
-  const char *name;
+  static volatile int64_t threadIndex;
+  std::string name;
   Mutex mutex;
   Condition cond;
   bool isRunning = false;
@@ -30,7 +31,9 @@ class Thread : public Runnable {
   friend void *fnThread(void *arg);
 
  public:
-  Thread(const char *name, Runnable *runnable) ;
+  Thread(std::string& name , Runnable *runnable = nullptr);
+  Thread(std::string&& name , Runnable *runnable = nullptr);
+  Thread( Runnable *runnable = nullptr);
 
   void run() override {}
 

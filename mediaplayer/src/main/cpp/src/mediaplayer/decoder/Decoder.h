@@ -6,29 +6,33 @@
 #define MUSICPLAYER_DECODER_H
 
 #include <cstdint>
-#include "../Player.h"
+#include <queue/FrameQueue.h>
+#include "Thread.h"
 extern "C" {
 #include "libavformat/avformat.h"
-};
+}
+
+class VideoState;
 
 class Decoder : public Runnable {
- private:
+ protected:
   int32_t streamIndex;
   AVStream *avStream;
   AVCodecContext *codecContext;
   VideoState *videoState;
-  Thread DecodeThread;
-  bool abortRequest;
-
+  Thread decodeThread;
+  bool abortRequest = false;
  public:
   Decoder(const char *name, int32_t streamIndex,
           AVStream *avStream,
           AVCodecContext *codecContext,
           VideoState *videoState);
 
-  virtual void start() = 0;
+  void run() override;
 
-  virtual void stop() = 0;
+  virtual void start();
+
+  virtual void stop();
 
 };
 

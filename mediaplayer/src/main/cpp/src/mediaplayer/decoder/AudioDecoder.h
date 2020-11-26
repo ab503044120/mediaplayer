@@ -6,10 +6,12 @@
 #define MUSICPLAYER_AUDIODECODER_H
 #include "Decoder.h"
 class AudioDecoder : public Decoder {
- protected:
-  void run() override;
+  const char *TAG = "AudioDecoder";
  public:
-  void start() override;
+  AudioDecoder(int32_t streamIndex, AVStream *avStream, AVCodecContext *codecContext, VideoState *videoState);
+
+  void run() override;
+
   void stop() override;
 
 };
