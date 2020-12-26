@@ -7,18 +7,25 @@
 AudioDecoder::AudioDecoder(int32_t streamIndex,
                            AVStream *avStream,
                            AVCodecContext *codecContext,
-                           VideoState *videoState) : Decoder("audioDecoder", streamIndex, avStream, codecContext, videoState) {}
+                           PlayerState *playerState,
+                           AudioParam &param)
+    : Decoder("audioDecoder", streamIndex, avStream, codecContext, playerState), targetParam(param), curParam(param) {}
+
+void AudioDecoder::fetchData(uint8_t *outBuffer, int32_t bufferSize) {
+
+}
+
 void AudioDecoder::run() {
-  int32_t ret = 0;
+  int32_t ret;
   AVPacket pkt;
   av_init_packet(&pkt);
   AVFrame *frame = av_frame_alloc();
   uint32_t serial = 0;
-  while (!videoState->abort_req) {
+  while (!playerState->abort_req) {
     ret = 0;
-    while (ret == 0 && !videoState->abort_req) {
+    while (ret == 0 && !playerState->abort_req) {
       LOGE(TAG, "%s", " start take");
-      ret = videoState->audioq.take(pkt, &serial);
+      ret = pktQ.take(pkt, &serial);
     }
     if (ret < 0) {
       return;
@@ -32,11 +39,11 @@ void AudioDecoder::run() {
     ret = avcodec_receive_frame(codecContext, frame);
     LOGE(TAG, "%s %d", "avcodec_receive_frame", ret);
     if (ret == 0) {
-      Frame *wf = nullptr;
-      wf = videoState->audioFq.writable();
+      Frame *wf;
+      wf = frameQ.writable();
       if (wf) {
         av_frame_move_ref(wf->frame, frame);
-        videoState->audioFq.push();
+        frameQ.push();
       }
     } else if (ret == AVERROR_EOF) {
       avcodec_flush_buffers(codecContext);
@@ -44,10 +51,10 @@ void AudioDecoder::run() {
     }
 
   }
-
   av_packet_unref(&pkt);
 }
 
 void AudioDecoder::stop() {
 
 }
+

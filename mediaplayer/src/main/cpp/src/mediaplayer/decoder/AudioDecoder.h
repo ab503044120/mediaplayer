@@ -5,10 +5,40 @@
 #ifndef MUSICPLAYER_AUDIODECODER_H
 #define MUSICPLAYER_AUDIODECODER_H
 #include "Decoder.h"
-class AudioDecoder : public Decoder {
-  const char *TAG = "AudioDecoder";
+class Resampler {
+ private:
+  SwrContext *swr_ctx;
+
  public:
-  AudioDecoder(int32_t streamIndex, AVStream *avStream, AVCodecContext *codecContext, VideoState *videoState);
+
+  void init();
+
+  void destory();
+
+};
+struct AudioParam {
+  int freq;
+  int channels;
+  int64_t channel_layout;
+  enum AVSampleFormat fmt;
+  int frame_size;
+  int bytes_per_sec;
+};
+
+class AudioDecoder : public Decoder {
+ private:
+  const char *TAG = "AudioDecoder";
+  AudioParam targetParam;
+  AudioParam curParam;
+  Resampler resampler{};
+ public:
+  AudioDecoder(int32_t streamIndex,
+               AVStream *avStream,
+               AVCodecContext *codecContext,
+               PlayerState *playerState,
+               AudioParam &param);
+
+  void fetchData(uint8_t *outBuffer, int32_t bufferSize);
 
   void run() override;
 

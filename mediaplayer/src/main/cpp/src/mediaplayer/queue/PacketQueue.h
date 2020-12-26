@@ -22,7 +22,7 @@ class Packet {
 
 class PacketQueue {
  private:
-  uint32_t maxPacket;
+  uint32_t maxPacket = 0;
   Mutex mutex{};
   Condition emptyCond;
   Condition fullCond;
@@ -35,13 +35,18 @@ class PacketQueue {
   uint32_t size = 0;
   uint32_t nb_packet = 0;
   int64_t duration = 0;
-  int64_t maxPackNb;
+  int64_t maxPackNb = 0;
 
   PacketQueue(int64_t maxSize = 50 * 1000 * 100, uint32_t maxPacket = 25);
+
   ~PacketQueue();
-  int8_t put(AVPacket &packet, uint32_t serial);
-  int8_t take(AVPacket &packet, uint32_t *serial);
+
+  int32_t put(AVPacket &packet, uint32_t serial);
+
+  int32_t take(AVPacket &packet, uint32_t *serial);
+
   void abort();
+
   void clear();
 
 };

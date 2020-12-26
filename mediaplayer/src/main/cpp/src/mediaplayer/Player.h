@@ -9,24 +9,38 @@
 #include <Thread.h>
 #include <Mutex.h>
 #include <queue/PacketQueue.h>
-#include <decoder/Decoder.h>
+#include <decoder/AudioDecoder.h>
 #include <queue/FrameQueue.h>
+#include <render/AudioRender.h>
+#include <render/VideoRender.h>
 extern "C" {
 #include "libavformat/avformat.h"
 }
+struct AudioRenderSpec;
 
-class VideoState;
+class PlayerState;
 
-class Player : public Runnable {
+class Player : public Runnable, public AudioFetchCallback {
  private:
-  const char *url;
-  static const char *TAG;
+  constexpr static const int next_nb_channels[8] = {0, 0, 1, 6, 2, 6, 4, 6};
+  constexpr static const int next_sample_rates[8] = {0, 44100, 48000};
+
+  const char *url = nullptr;
+  static constexpr const char *TAG = "Player";
   AVFormatContext *pFormatCtx;
   AVDictionary *codec_opts;
   Mutex mutex;
-  VideoState *videoState;
+  PlayerState *playerState;
+  Thread *readThread = nullptr;
+  int32_t audioStreamIndex = -1;
+  AudioDecoder *audioDecoder = nullptr;
+  AudioRender *audioRender = nullptr;
+  int32_t videoStreamIndex = -1;
+  Decoder *videoDecoder = nullptr;
+  VideoRender *videoRender = nullptr;
 
  public:
+
   Player();
 
   virtual ~Player();
@@ -34,6 +48,13 @@ class Player : public Runnable {
   void setDataSource(const char *dataSource);
 
   int32_t streamComponentOpen(int stream_index);
+
+  int32_t openAudioRender(int64_t wanted_channel_layout,
+                          int32_t wanted_nb_channels,
+                          int32_t wanted_sample_rate,
+                          AudioParam &param);
+
+  void fetchAudioData(uint8_t *stream, int len) override;
 
   void prepare();
 
@@ -55,11 +76,9 @@ class Player : public Runnable {
 
   void run() override;
 
- private:
-
 };
 
-class VideoState {
+class PlayerState {
  public:
   bool pause = false;
   bool last_pause = false;
@@ -69,17 +88,6 @@ class VideoState {
 
   volatile bool abort_req = false;
 
-  Thread *readThread = nullptr;
-
-  int32_t audioStreamIndex = -1;
-  PacketQueue audioq;
-  FrameQueue audioFq;
-  Decoder *audioDecoder = nullptr;
-
-  int32_t videoStreamIndex = -1;
-  PacketQueue videoq;
-  FrameQueue videoFq;
-  Decoder *videoDecoder = nullptr;
-
 };
+
 #endif //MUSICPLAYER_PLAYER_H

@@ -9,13 +9,12 @@
 class Condition {
  private:
   pthread_cond_t cond{};
-  Mutex &mutex;
  public:
-  void wait();
-  void wait(int64_t time);
+  void wait(Mutex& mutex);
+  void wait(Mutex& mutex,int64_t ntime);
   void signal();
   void broadcast();
-  Condition(Mutex &mutex);
+  Condition();
   virtual ~Condition();
 };
 

@@ -10,25 +10,32 @@
 #include "Thread.h"
 extern "C" {
 #include "libavformat/avformat.h"
+#include "libswresample/swresample.h"
 }
 
-class VideoState;
+class PlayerState;
 
 class Decoder : public Runnable {
  protected:
   int32_t streamIndex;
   AVStream *avStream;
   AVCodecContext *codecContext;
-  VideoState *videoState;
+  PacketQueue pktQ;
+  FrameQueue frameQ;
+  PlayerState *playerState;
   Thread decodeThread;
   bool abortRequest = false;
  public:
   Decoder(const char *name, int32_t streamIndex,
           AVStream *avStream,
           AVCodecContext *codecContext,
-          VideoState *videoState);
+          PlayerState *playerState);
 
-  void run() override;
+  void putPkt(AVPacket &packet, uint32_t serial);
+
+  uint32_t getPktNB() const;
+
+  uint32_t getPktTotalSize() const;
 
   virtual void start();
 

@@ -46,7 +46,7 @@ void EGLThread::run() {
 
         break;
       } else {
-        drawCond.wait();
+        drawCond.wait(drawMutex);
       }
     }
     if (!hasGlSurface) {
@@ -91,9 +91,7 @@ bool EGLThread::readyDraw() {
 }
 
 EGLThread::EGLThread() : Thread("EGLRenderThread", nullptr),
-                         render(new TextrueRender()),
-                         drawMutex(Mutex()),
-                         drawCond(drawMutex) {
+                         render(new TextrueRender()) {
   start();
 }
 

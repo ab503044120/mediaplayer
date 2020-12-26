@@ -3,3 +3,4 @@
 //
 
 #include "VideoRender.h"
+VideoRender::VideoRender(const char *name, PlayerState &playerState) : IRender(name, playerState) {}

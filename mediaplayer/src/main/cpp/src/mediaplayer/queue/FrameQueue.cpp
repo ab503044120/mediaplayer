@@ -11,7 +11,7 @@ Frame::~Frame() {
   }
 }
 
-FrameQueue::FrameQueue(int32_t max_size) : cond(mutex), max_size(FFMIN(FRAME_QUEUE_SIZE, max_size)) {
+FrameQueue::FrameQueue(int32_t max_size) : max_size(FFMIN(FRAME_QUEUE_SIZE, max_size)) {
   for (auto &i : frames) {
     i.frame = av_frame_alloc();
   }
@@ -30,7 +30,7 @@ Frame *FrameQueue::readable() {
   }
   mutex.lock();
   while (size <= rindex_shown && !_abort) {
-    cond.wait();
+    cond.wait(mutex);
   }
   mutex.unLock();
   if (rindex_shown) {
@@ -41,7 +41,7 @@ Frame *FrameQueue::readable() {
 Frame *FrameQueue::writable() {
   mutex.lock();
   while (size >= max_size && !_abort) {
-    cond.wait();
+    cond.wait(mutex);
   }
   mutex.unLock();
   if (_abort) {

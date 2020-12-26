@@ -8,20 +8,20 @@
 VideoDecoder::VideoDecoder(int32_t streamIndex,
                            AVStream *avStream,
                            AVCodecContext *codecContext,
-                           VideoState *videoState) : Decoder("videoDecoder", streamIndex, avStream, codecContext, videoState) {
+                           PlayerState *playerState) : Decoder("videoDecoder", streamIndex, avStream, codecContext, playerState) {
 
 }
 void VideoDecoder::run() {
-  int32_t ret = 0;
+  int32_t ret;
   AVPacket pkt;
   av_init_packet(&pkt);
   AVFrame *frame = av_frame_alloc();
   uint32_t serial = 0;
-  while (!videoState->abort_req) {
+  while (!playerState->abort_req) {
     ret = 0;
-    while (ret == 0 && !videoState->abort_req) {
+    while (ret == 0 && !playerState->abort_req) {
       LOGE(TAG, "%s", " start take");
-      ret = videoState->videoq.take(pkt, &serial);
+      ret =pktQ.take(pkt, &serial);
     }
     if (ret < 0) {
       return;
@@ -35,11 +35,11 @@ void VideoDecoder::run() {
     ret = avcodec_receive_frame(codecContext, frame);
     LOGE(TAG, "%s %d", "avcodec_receive_frame", ret);
     if (ret == 0) {
-      Frame *wf = nullptr;
-      wf = videoState->videoFq.writable();
+      Frame *wf;
+      wf = frameQ.writable();
       if (wf) {
         av_frame_move_ref(wf->frame, frame);
-        videoState->videoFq.push();
+        frameQ.push();
       }
     } else if (ret == AVERROR(EAGAIN)) {
       LOGE(TAG, "%s ", "try again");

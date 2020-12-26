@@ -6,7 +6,7 @@ include_directories(${COMMON_DIR}/3rd/utils/include)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/egl SRC_EGL)
 
-add_subdirectory(${COMMON_DIR}/3rd/utils ${TOP_DIR}/common)
+add_subdirectory(${COMMON_DIR}/3rd/utils ${CMAKE_CURRENT_BINARY_DIR}/common)
 
 #link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd/ffmpeg/libs/${ANDROID_ABI})
 

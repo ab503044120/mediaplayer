@@ -10,7 +10,7 @@
 class VideoDecoder: public Decoder {
   const char *TAG = "VideoDecoder";
  public:
-  VideoDecoder(int32_t streamIndex, AVStream *avStream, AVCodecContext *codecContext, VideoState *videoState);
+  VideoDecoder(int32_t streamIndex, AVStream *avStream, AVCodecContext *codecContext, PlayerState *playerState);
 
   void run() override;
 

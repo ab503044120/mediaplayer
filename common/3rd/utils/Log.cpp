@@ -60,3 +60,7 @@ void Logger::logi(const char *format, ...) {
   va_end(arglist);
 }
 
+bool negativeValueCheck(int32_t value) {
+  return value < 0;
+}
+

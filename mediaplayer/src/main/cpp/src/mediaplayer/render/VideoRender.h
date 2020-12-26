@@ -7,7 +7,8 @@
 
 #include "IRender.h"
 class VideoRender : public IRender {
-
+ public:
+  VideoRender(const char *name, PlayerState &playerState);
 };
 
 #endif //MUSICPLAYER_VIDEORENDER_H

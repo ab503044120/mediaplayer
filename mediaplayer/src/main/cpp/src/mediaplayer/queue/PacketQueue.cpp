@@ -10,14 +10,14 @@ Packet::~Packet() {
   av_packet_unref(&this->packet);
 }
 PacketQueue::PacketQueue(int64_t maxSize, uint32_t maxPacket)
-    : maxPackNb(maxSize), maxPacket(maxPacket), emptyCond(mutex), fullCond(mutex) {
+    : maxPackNb(maxSize), maxPacket(maxPacket) {
 
 }
 PacketQueue::~PacketQueue() {
   clear();
 }
 
-int8_t PacketQueue::put(AVPacket &packet, uint32_t serial) {
+int32_t PacketQueue::put(AVPacket &packet, uint32_t serial) {
   mutex.lock();
   packets.emplace_back(packet, serial);
   nb_packet++;
@@ -27,11 +27,11 @@ int8_t PacketQueue::put(AVPacket &packet, uint32_t serial) {
   mutex.unLock();
   return 0;
 }
-int8_t PacketQueue::take(AVPacket &packet, uint32_t *serial) {
+int32_t PacketQueue::take(AVPacket &packet, uint32_t *serial) {
   int8_t ret = 1;
   mutex.lock();
   while (!abort_request && packets.empty()) {
-    emptyCond.wait();
+    emptyCond.wait(mutex);
   }
   if (abort_request) {
     ret = -1;

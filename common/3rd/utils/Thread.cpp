@@ -25,7 +25,7 @@ volatile int64_t Thread::threadIndex = 0;
 
 Thread::Thread(std::string &&name, Runnable *runnable) : Thread(name, runnable) {}
 
-Thread::Thread(std::string &name, Runnable *runnable) : mutex(Mutex()), cond(mutex), name(name), runnable(runnable) {
+Thread::Thread(std::string &name, Runnable *runnable) : name(name), runnable(runnable) {
 }
 Thread::Thread(Runnable *runnable) : Thread(std::string("thread-").append(std::to_string(threadIndex++)), runnable) {
 

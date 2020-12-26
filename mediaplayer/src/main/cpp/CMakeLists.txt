@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.10.1)
 
 set(COMMON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../common")
 
@@ -8,8 +8,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer)
 
 #add_subdirectory(3rd/ffmpeg)
 
-add_subdirectory(${COMMON_DIR}/3rd/utils utils)
-add_subdirectory(${COMMON_DIR}/3rd/ffmpeg ffmpeg)
+add_subdirectory(${COMMON_DIR}/3rd/utils ${CMAKE_CURRENT_BINARY_DIR}/utils)
+#add_subdirectory(${COMMON_DIR}/3rd/ffmpeg ffmpeg)
 
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/jni SRC_MEDIA_PLAYER_JNI)
@@ -17,6 +17,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer SRC_MEDIA_PLAYE
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer/decoder SRC_MEDIA_PLAYER_DECODER)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer/queue SRC_MEDIA_PLAYER_QUEUE)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer/render SRC_MEDIA_PLAYER_RENDER)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/mediaplayer/sync SRC_MEDIA_PLAYER_SYNC)
 
 
 add_library(avcodec SHARED IMPORTED)
@@ -67,15 +68,17 @@ add_library(mediaplayer SHARED
         ${SRC_MEDIA_PLAYER}
         ${SRC_MEDIA_PLAYER_DECODER}
         ${SRC_MEDIA_PLAYER_QUEUE}
-        ${SRC_MEDIA_PLAYER_RENDER})
+        ${SRC_MEDIA_PLAYER_RENDER}
+        ${SRC_MEDIA_PLAYER_SYNC})
 
 target_link_libraries(mediaplayer
         android
         log
-        -lGLESv2
-        -lGLESv3
-        -ljnigraphics
-        -lEGL
+        GLESv2
+        GLESv3
+        jnigraphics
+        OpenSLES
+        EGL
         utils
         avcodec
         avdevice

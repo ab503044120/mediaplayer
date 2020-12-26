@@ -3,3 +3,7 @@
 //
 
 #include "IRender.h"
+void IRender::start() {
+  thread.start();
+}
+IRender::IRender(const char *name, PlayerState &playerState) : playerState(playerState), thread(Thread(name, this)) {}
